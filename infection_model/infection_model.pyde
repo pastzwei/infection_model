@@ -1,5 +1,5 @@
 ####################
-#ウィルス流行シミュレーション（のまねっこ）v0.6 by K.Sakurai 2020.4.29
+#ウィルス流行シミュレーション（のまねっこ）v0.61 by K.Sakurai 2020.4.29
 #Using Python Mode for Processing 3
 #
 #紹介していただいた道越 秀吾さんのシミュレーションを
@@ -27,7 +27,7 @@ inf_rate = 0.1 #感染確率
 rec_rate = 0.1 #回復確率
 n_initial = 0.01 #初期感染者割合
 n_contact = 5 #接触数
-n_void = 0.5 #空隙率
+n_void = 0 #空隙率
 
 wait_time = 0 #待ち時間
 
@@ -126,7 +126,11 @@ def draw():
                     if random(0,1) <= inf_rate:
                         cells_next[(i+1)%100][(j+1)%100] = 1
                 
-                #現在の感染者は回復確率で回復
+    for i in range(100):
+        for j in range(100):
+            
+            #現在の感染者は回復確率で回復
+            if cells[i][j] == 1:
                 if random(0,1) <= rec_rate:
                     cells_next[i][j] = 2
                 else:
