@@ -11,7 +11,6 @@
 #どげんかしたければもうPythonで書いちゃうのがいい．
 #
 #☆これからやっていく
-#空隙を設定できるようにする
 #セルの移動に対応する
 #ステップ毎のS,I,Rを.csvに書き出せるようにする
 #
@@ -28,6 +27,7 @@ inf_rate = 0.1 #感染確率
 rec_rate = 0.1 #回復確率
 n_initial = 0.01 #初期感染者割合
 n_contact = 5 #接触数
+n_void = 0.5 #空隙率
 
 wait_time = 0 #待ち時間
 
@@ -40,9 +40,17 @@ def setup():
     
     global cells
     
-    #初期感染者を用意（全セル数x初期感染者割合だけ感染者セルを作成）
+    #空隙を用意（全セル数x空隙率だけ空隙セルを作成）
     index = 0
-    while index < 10000 * n_initial:
+    while index < 10000 * n_void:
+        hit = floor(random(0, 10000))
+        if cells[floor(hit / 100)][hit % 100] == 0:
+            cells[floor(hit / 100)][hit % 100] = 3
+            index += 1
+    
+    #初期感染者を用意（全セル数x(1-空隙率)x初期感染者割合だけ感染者セルを作成）
+    index = 0
+    while index < 10000 * (1 - n_void) * n_initial:
         hit = floor(random(0, 10000))
         if cells[floor(hit / 100)][hit % 100] == 0:
             cells[floor(hit / 100)][hit % 100] = 1
@@ -130,6 +138,13 @@ def draw():
             #そのセルが回復者なら，感染処理後も回復者（感染してても上書き）
             if cells[i][j] == 2:
                 cells_next[i][j] = 2
+                
+    for i in range(100):
+        for j in range(100):
+            #そのセルが空隙なら，感染処理後も空隙（感染してても上書き）
+            if cells[i][j] == 3:
+                cells_next[i][j] = 3
+
     
     #全セルの処理が終わったらcells_nextをcellsに移す
     cells = copy.deepcopy(cells_next)
