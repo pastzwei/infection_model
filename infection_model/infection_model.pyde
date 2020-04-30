@@ -23,11 +23,11 @@
 import copy
 
 #パラメータ入力
-inf_rate = 1 #感染確率
-rec_rate = 0 #回復確率
-n_initial = 0.0001 #初期感染者割合
-n_contact = 8 #接触数
-n_void = 0.65 #空隙率
+inf_rate = 0.1 #感染確率
+rec_rate = 0.1 #回復確率
+n_initial = 0.01 #初期感染者割合
+n_contact = 4.8 #接触数
+n_void = 0 #空隙率
 
 wait_time = 0 #待ち時間
 
