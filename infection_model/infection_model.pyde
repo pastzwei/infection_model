@@ -1,5 +1,5 @@
 ####################
-#ウィルス流行シミュレーション（のまねっこ）v0.9 by K.Sakurai 2020.4.29
+#ウィルス流行シミュレーション（のまねっこ）v0.91 by K.Sakurai 2020.4.29
 #Using Python Mode for Processing 3
 #
 #紹介していただいた道越 秀吾さんのシミュレーションを
@@ -8,7 +8,7 @@
 #
 #☆これからやっていく
 #セルの移動に対応する
-#ステップ毎のS,I,Rを.csvに書き出せるようにする
+#ステップ毎のS,I,Rを画面表示し，.csvに書き出せるようにする
 ####################
 
 import copy
@@ -202,7 +202,7 @@ def mousePressed():
 #接触セル指定
 def touch():
     touchs = [0, 0, 0, 0, 0, 0, 0, 0]
-    k = int(random.gauss(n_contact_average, n_contact_sigma))
+    k = int(round(random.gauss(n_contact_average, n_contact_sigma)))
     if k > 8:
         k = 8
     touch = random.sample(range(8), k)
@@ -210,11 +210,3 @@ def touch():
         touchs[i] = 1
 
     return touchs
-        
-
-#接触数の小数点処理(4.8ならば，80%が5人，20%が4人と接触するように）
-def probability(num):
-    if num >= random.random():
-        return True
-    else:
-        return False
