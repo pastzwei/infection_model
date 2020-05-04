@@ -1,5 +1,5 @@
 ####################
-#ウィルス流行シミュレーション（のまねっこ）v0.91 by K.Sakurai 2020.4.29
+#ウィルス流行シミュレーション（のまねっこ）v0.92 by K.Sakurai 2020.4.29
 #Using Python Mode for Processing 3
 #
 #紹介していただいた道越 秀吾さんのシミュレーションを
@@ -18,9 +18,9 @@ import random
 n_siz = 100 #モデルのサイズ（32以上できれいに正方形．大きすぎると重くなるよ）
 inf_rate = 0.1 #感染確率
 rec_rate = 0.1 #回復確率
-n_initial = 0.01 #初期感染者割合
-n_contact_average = 4.8 #接触数平均
-n_contact_sigma = 1 # 接触数標準偏差
+n_initial = 0.0001 #初期感染者割合
+n_contact_average = 4 #接触数平均
+n_contact_sigma = 0 # 接触数標準偏差
 n_void = 0 #空隙率
 
 wait_time = 0 #待ち時間
@@ -205,6 +205,8 @@ def touch():
     k = int(round(random.gauss(n_contact_average, n_contact_sigma)))
     if k > 8:
         k = 8
+    elif k < 0:
+        k = 0
     touch = random.sample(range(8), k)
     for i in touch:
         touchs[i] = 1
