@@ -1,5 +1,5 @@
 ####################
-#ウィルス流行シミュレーション（のまねっこ）v0.61 by K.Sakurai 2020.4.29
+#ウィルス流行シミュレーション（のまねっこ）v0.8 by K.Sakurai 2020.4.29
 #Using Python Mode for Processing 3
 #
 #紹介していただいた道越 秀吾さんのシミュレーションを
@@ -31,66 +31,30 @@ n_void = 0 #空隙率
 
 wait_time = 0 #待ち時間
 
-#箱庭の用意（100x100の二次元配列）
+#箱庭と感染者数チェッカーの用意
 cells = [[0 for i in range(100)] for j in range(100)] 
 
 def setup():
     size(800, 800) #ウィンドウサイズは800x800（1セル8x8）
     background(255)
-    
-    global cells
-    
-    #空隙を用意（全セル数x空隙率だけ空隙セルを作成）
-    index = 0
-    while index < 10000 * n_void:
-        hit = floor(random(0, 10000))
-        if cells[floor(hit / 100)][hit % 100] == 0:
-            cells[floor(hit / 100)][hit % 100] = 3
-            index += 1
-    
-    #初期感染者を用意（全セル数x(1-空隙率)x初期感染者割合だけ感染者セルを作成）
-    index = 0
-    while index < 10000 * (1 - n_void) * n_initial:
-        hit = floor(random(0, 10000))
-        if cells[floor(hit / 100)][hit % 100] == 0:
-            cells[floor(hit / 100)][hit % 100] = 1
-            index += 1
-    
-    #最初はnextも同じものを用意
-    cells_next = copy.deepcopy(cells)
-    
-    #境目の点をつける
-    stroke(0)
-    for i in range(99):
-        for j in range(99):
-            point(j*8+7, i*8+7)
 
-    #以降，枠線はつけない
-    noStroke()
+    initialize() #しょきか
+   
+    #最初の表示
+    paint()
+    
+    #フレーム撮影する場合は下の1行のコメントアウトを外す その1
+    #saveFrame("frames/######.png")
+
                         
 def draw():
     
     global cells
-    cells_next = [[0 for i in range(100)] for j in range(100)] 
-
     
-    #drawでは，表示をリフレッシュして次の状態をcells_nextに作る
-    for i in range(100):
-        for j in range(100):
-            
-            #表示のリフレッシュ
-            paint(i, j)
-            
-            #☆状態書き出し（更新予定）
-            
-            #☆移動処理（更新予定）
-
-            #☆感染処理
-
-            #そのセルがSなら，nextはそのままSに．
-            if cells[i][j] == 0:
-                cells_next[i][j] =0
-            
+    #次状態を記録するリストを用意し初期化（全体をSとして初期化する）
+    cells_next = [[0 for i in range(100)] for j in range(100)] 
+    
+    #処理1：感染
     for i in range(100):
         for j in range(100):
             
@@ -125,7 +89,8 @@ def draw():
                 if cont[7] == 1:
                     if random(0,1) <= inf_rate:
                         cells_next[(i+1)%100][(j+1)%100] = 1
-                
+    
+    #処理2：回復
     for i in range(100):
         for j in range(100):
             
@@ -135,14 +100,16 @@ def draw():
                     cells_next[i][j] = 2
                 else:
                     cells_next[i][j] = 1
-            
+    
+    #処理3：回復者上書き
     for i in range(100):
         for j in range(100):
             
             #そのセルが回復者なら，感染処理後も回復者（感染してても上書き）
             if cells[i][j] == 2:
                 cells_next[i][j] = 2
-                
+    
+    #処理4：空隙上書き            
     for i in range(100):
         for j in range(100):
             #そのセルが空隙なら，感染処理後も空隙（感染してても上書き）
@@ -150,32 +117,97 @@ def draw():
                 cells_next[i][j] = 3
 
     
-    #全セルの処理が終わったらcells_nextをcellsに移す
+    #全処理が終わったらcells_nextをcellsに移す
     cells = copy.deepcopy(cells_next)
     del cells_next
-    delay(wait_time)
     
-    #フレーム撮影する場合は下の1行のコメントアウトを外す（処理遅くなる）
+    #SIRそれぞれの総数をカウント
+    S_now = sum(v.count(0) for v in cells)
+    I_now = sum(v.count(1) for v in cells)
+    R_now = sum(v.count(2) for v in cells)
+    
+    #感染者が0ならばループ解除
+    if I_now == 0:
+        noLoop()
+        println("stopped")
+    
+    #表示を更新
+    paint()
+    
+    #フレーム撮影する場合は下の1行のコメントアウトを外す その2
     #saveFrame("frames/######.png")
+    
+    #最後にwait_timeだけ待つ
+    delay(wait_time)
+
+
+
+########## draw関数ここまで ##########    
 
 #セルの状態を読み取り，塗る色を決める関数
-def paint(i, j):
+def paint():
     global cells
     
-    #セルの色を指定
-    if cells[i][j] == 0:    #0は感受性保持者S（白）
-        fill(255)
-    elif cells[i][j] == 1:    #1は感染者I（赤）
-        fill(255, 0, 0)
-    elif cells[i][j] == 2:    #2は免疫保持者R（緑）
-        fill(0, 255, 0)
-    elif cells[i][j] == 3:    #3は空隙（黒）
-        fill(0)
-    else:               #それ以外はわからん（灰：出たらバグ）
-        fill(128)
+    for i in range(100):
+        for j in range(100):
+            
+            #セルの色を指定
+            if cells[i][j] == 0:    #0は感受性保持者S（白）
+                fill(255)
+            elif cells[i][j] == 1:    #1は感染者I（赤）
+                fill(255, 0, 0)
+            elif cells[i][j] == 2:    #2は免疫保持者R（緑）
+                fill(0, 255, 0)
+            elif cells[i][j] == 3:    #3は空隙（黒）
+                fill(0)
+            else:               #それ以外はわからん（灰：出たらバグ）
+                fill(128)
+                
+            #セルを塗る
+            rect(8*j, 8*i, 7, 7)
         
-    #セルを塗る
-    rect(8*j, 8*i, 7, 7)
+#初期設定
+def initialize():
+    global cells
+    
+    #箱庭リセット
+    cells = [[0 for i in range(100)] for j in range(100)] 
+
+    #空隙を用意（全セル数x空隙率だけ空隙セルを作成）
+    index = 0
+    while index < 10000 * n_void:
+        hit = floor(random(0, 10000))
+        if cells[floor(hit / 100)][hit % 100] == 0:
+            cells[floor(hit / 100)][hit % 100] = 3
+            index += 1
+    
+    #初期感染者を用意（全セル数x(1-空隙率)x初期感染者割合だけ感染者セルを作成）
+    index = 0
+    while index < 10000 * (1 - n_void) * n_initial:
+        hit = floor(random(0, 10000))
+        if cells[floor(hit / 100)][hit % 100] == 0:
+            cells[floor(hit / 100)][hit % 100] = 1
+            index += 1
+    
+    #最初はnextも同じものを用意
+    cells_next = copy.deepcopy(cells)
+    
+    #境目の点をつける
+    stroke(0)
+    for i in range(99):
+        for j in range(99):
+            point(j*8+7, i*8+7)
+
+    #以降，枠線はつけない
+    noStroke()
+
+#クリックしたらリスタート
+def mousePressed():
+    global cells
+    noLoop()
+    delay(100)
+    initialize()
+    loop()
 
 #接触セル指定
 def touch():
@@ -202,4 +234,3 @@ def probability(num):
         return True
     else:
         return False
-    
