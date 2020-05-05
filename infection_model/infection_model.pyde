@@ -1,5 +1,5 @@
 ####################
-#ウィルス流行シミュレーション（のまねっこ）v0.92 by K.Sakurai 2020.4.29
+#ウィルス流行シミュレーション（のまねっこ）v0.97 by K.Sakurai 2020.4.29
 #Using Python Mode for Processing 3
 #
 #紹介していただいた道越 秀吾さんのシミュレーションを
@@ -18,9 +18,9 @@ import random
 n_siz = 100 #モデルのサイズ（32以上できれいに正方形．大きすぎると重くなるよ）
 inf_rate = 0.1 #感染確率
 rec_rate = 0.1 #回復確率
-n_initial = 0.0001 #初期感染者割合
-n_contact_average = 4 #接触数平均
-n_contact_sigma = 0 # 接触数標準偏差
+n_initial = 0.01 #初期感染者割合
+n_contact_average = 4.8 #接触数平均
+n_contact_sigma = 1.0 # 接触数標準偏差
 n_void = 0 #空隙率
 
 wait_time = 0 #待ち時間
@@ -29,13 +29,12 @@ wait_time = 0 #待ち時間
 cells = [[0 for i in range(n_siz)] for j in range(n_siz)] 
 
 def setup():
-    size(n_siz * 8, n_siz * 8) #ウィンドウサイズは800x800（1セル8x8）
+    size(n_siz * 8, n_siz * 8 + 120) #ウィンドウサイズは800x800（1セル8x8）
     background(255)
+    myFont = createFont("メイリオ", 48)
+    textFont(myFont)
 
-    initialize() #しょきか
-   
-    #最初の表示
-    paint()
+    initialize()
     
     #フレーム撮影する場合は下の1行のコメントアウトを外す その1
     #saveFrame("frames/######.png")
@@ -97,7 +96,6 @@ def draw():
     #処理3：回復者上書き
     for i in range(n_siz):
         for j in range(n_siz):
-            
             #そのセルが回復者なら，感染処理後も回復者（感染してても上書き）
             if cells[i][j] == 2:
                 cells_next[i][j] = 2
@@ -112,7 +110,6 @@ def draw():
     
     #全処理が終わったらcells_nextをcellsに移す
     cells = copy.deepcopy(cells_next)
-    del cells_next
     
     #SIRそれぞれの総数をカウント
     S_now = sum(v.count(0) for v in cells)
@@ -126,6 +123,11 @@ def draw():
     
     #表示を更新
     paint()
+    
+    fill(192)
+    rect(0, n_siz*8, n_siz*8, 60)
+    fill(0)
+    text("S:" + str(S_now) + " I:" + str(I_now) + " R:" + str(R_now), 8, n_siz*8 + 48)
     
     #フレーム撮影する場合は下の1行のコメントアウトを外す その2
     #saveFrame("frames/######.png")
@@ -179,19 +181,23 @@ def initialize():
     for hit in hits:
         cells[hit / n_siz][hit % n_siz] = 1
     
-    #最初はnextも同じものを用意
-    cells_next = copy.deepcopy(cells)
-    
     #境目の点をつける
     stroke(0)
     for i in range(n_siz - 1):
         for j in range(n_siz - 1):
             point(j*8+7, i*8+7)
 
-    #以降，枠線はつけない
     noStroke()
+    
+    paint()
+    
+    #最初の表示
+    fill(192)        
+    rect(0, n_siz*8, n_siz*8, 120)
+    fill(0)
+    text("I:" + str(inf_rate) + " R:" + str(rec_rate) + " Init:" + str(n_initial) + " Void:" + str(n_void), 8, n_siz*8 + 108)
 
-#クリックしたらリスタート
+#クリックしたらリセットしてリスタート
 def mousePressed():
     global cells
     noLoop()
