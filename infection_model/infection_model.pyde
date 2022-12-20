@@ -19,13 +19,12 @@ import random
 
 #パラメータ入力
 n_siz = 100 #モデルのサイズ（32以上できれいに正方形．大きすぎると重くなるよ）
-inf_rate = 0.1 #感染確率
-rec_rate = 0.1 #回復確率
-n_initial = 0.01 #初期感染者割合
+inf_rate = 0.1 #感染確率Ir
+rec_rate = 0.1 #回復確率Rr
+n_initial = 0.01 #初期感染者割合Init
 n_contact_average = 4.8 #接触数平均
 n_contact_sigma = 1.0 # 接触数標準偏差
-n_void = 0 #空隙率
-
+n_void = 0 #空隙率Voiid
 wait_time = 0 #待ち時間
 
 #箱庭と感染者数チェッカーの用意
@@ -198,7 +197,7 @@ def initialize():
     fill(192)        
     rect(0, n_siz*8, n_siz*8, 120)
     fill(0)
-    text("I:" + str(inf_rate) + " R:" + str(rec_rate) + " Init:" + str(n_initial) + " Void:" + str(n_void), 8, n_siz*8 + 108)
+    text("Ir:" + str(inf_rate) + " Rr:" + str(rec_rate) + " Init:" + str(n_initial) + " Void:" + str(n_void), 8, n_siz*8 + 108)
 
 #クリックしたらリセットしてリスタート
 def mousePressed():
